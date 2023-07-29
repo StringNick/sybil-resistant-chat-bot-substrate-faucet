@@ -6,6 +6,22 @@ services:
       context: ./backend
       args:
         progress: plain
-
-    environment:
-      FLASK_DEBUG: "true"
+  substrate:
+    container_name: substrate
+    platform: linux/x86_64
+    image: parity/polkadot:v0.9.32
+    ports:
+      - 9933:9933
+      - 9944:9944
+      - 30333:30333
+    command: --dev --ws-external --rpc-external --rpc-methods Unsafe --offchain-worker Always
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+volumes:
+  redis-data:
+    driver: local
