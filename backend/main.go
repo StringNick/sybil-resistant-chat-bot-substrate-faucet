@@ -7,11 +7,15 @@ import (
 	"os/signal"
 	"substrate-faucet/internal/config"
 	"substrate-faucet/internal/domain/service"
+	"substrate-faucet/internal/env/redis"
+	"substrate-faucet/internal/env/substrate"
 	"substrate-faucet/internal/handler/processor"
+	"substrate-faucet/internal/service/drip"
 	"substrate-faucet/internal/service/umi/discord"
 	"substrate-faucet/internal/service/umi/matrix"
 	"syscall"
 
+	"github.com/centrifuge/go-substrate-rpc-client/v4/signature"
 	"go.uber.org/zap"
 )
 
@@ -70,14 +74,48 @@ func main() {
 		panic(err)
 	}
 
-	// register all services
+	// creating redis client
+	rdb, err := redis.NewRedis(cfg.Redis)
+	if err != nil {
+		panic(err)
+	}
+
+	// creating substrate client
+	sc, err := substrate.New(cfg.Substrate)
+	if err != nil {
+		panic(err)
+	}
+
+	// transferFrom account
+	transferFrom, err := signature.KeyringPairFromSecret(cfg.Substrate.SeedOrPhrase, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	// creating drip service
+	dripSvc, err := drip.New(drip.Params{
+		Rdb:                 rdb,
+		SubstrateClient:     sc,
+		SubstrateTransferer: transferFrom,
+
+		Cap:      cfg.Drip.Cap,
+		CapDelay: cfg.Drip.Delay,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	// register all umi services
 	services := registerServices(cfg)
 
 	zap.L().Debug("registered services", zap.Any("services_count", len(services)))
 
 	procHandler := processor.NewHandler(processor.HandlerParams{
-		Config:      cfg,
+		Config: cfg,
+
 		UMIServices: services,
+
+		DripService: dripSvc,
 	})
 	if err != nil {
 		panic(err)

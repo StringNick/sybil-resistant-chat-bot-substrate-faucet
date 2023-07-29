@@ -1,0 +1,25 @@
+[drip]
+cap = 0.025           # amount of tokens to drip
+delay = 86400000      # interval between drips in milliseconds
+network_decimals = 12 # number of decimals in the network
+
+[redis]
+endpoint = "redis:6379" # endpoint of redis server
+
+[substrate]
+endpoint = "ws://substrate:9944" # endpoint of substrate based chain
+seed_or_phrase = "//Alice"
+
+[faucet]
+secret = "secret-phrase" # authorization mnemonic phrase for substrate based chain
+
+[discord]
+enabled = true # enable discord bot
+token = ""     # discord bot token
+
+[matrix]
+enabled = true                            # enable matrix bot
+device_id = "faucet"                      # can be any string
+password = ""                             # password of matrix account
+username = "@some-bot-user:matrix.org"    # username of matrix account
+host = "https://matrix-client.matrix.org" # host of matrix server

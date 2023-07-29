@@ -9,18 +9,14 @@ type Config struct {
 	Drip      Drip      `toml:"drip" env:"DRIP"`
 	Redis     Redis     `toml:"redis" env:"REDIS"`
 	Substrate Substrate `toml:"substrate" env:"SUBSTRATE"`
-	Faucet    Faucet    `toml:"faucet" env:"FAUCET"`
 
 	Discord Discord `toml:"discord" env:"DISCORD"`
 	Matrix  Matrix  `toml:"matrix" env:"MATRIX"`
 }
 
-type Faucet struct {
-	Secret string `toml:"secret" env:"SECRET"`
-}
-
 type Substrate struct {
-	Endpoint string `toml:"endpoint" env:"ENDPOINT"`
+	Endpoint     string `toml:"endpoint" env:"ENDPOINT" default:"ws://substrate:9944"`
+	SeedOrPhrase string `toml:"seed_or_phrase" env:"SEED_OR_PHRASE"`
 }
 
 type Redis struct {
@@ -28,17 +24,18 @@ type Redis struct {
 }
 
 type Drip struct {
-	Cap   float64 `toml:"cap" env:"CAP"`     // coin per drip
-	Delay int64   `toml:"delay" env:"DELAY"` // in milliseconds
+	Cap             float64 `toml:"cap" env:"CAP" default:"0.025"`        // coin per drip
+	Delay           int64   `toml:"delay" env:"DELAY" default:"86400000"` // in milliseconds
+	NetworkDecimals uint16  `toml:"network_decimals" env:"NETWORK_DECIMALS" default:"12"`
 }
 
 type Discord struct {
-	Enabled bool   `toml:"enabled" env:"ENABLED"`
+	Enabled bool   `toml:"enabled" env:"ENABLED" default:"false"`
 	Token   string `toml:"token" env:"TOKEN"`
 }
 
 type Matrix struct {
-	Enabled  bool   `toml:"enabled" env:"ENABLED"`
+	Enabled  bool   `toml:"enabled" env:"ENABLED" default:"false"`
 	DeviceID string `toml:"device_id" env:"DEVICE_ID"`
 	Host     string `toml:"host" env:"HOST"`
 	Username string `toml:"username" env:"USERNAME"`

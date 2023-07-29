@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"substrate-faucet/internal/domain/entity"
 	"substrate-faucet/internal/domain/service"
+	"substrate-faucet/internal/env/substrate"
 	"time"
 
 	"go.uber.org/zap"
@@ -12,7 +13,49 @@ import (
 
 // processMsg - processing message from umi service
 func (h *Handler) processMsg(s service.UMIService, msg *entity.Message) {
-	zap.L().Debug("msg from some umi service", zap.Any("msg", msg))
+	if len(msg.Body) > len("/request ") && string(msg.Body[:len("/request ")]) == "/request " {
+		addr := string(msg.Body[len("/request "):])
+
+		zap.L().Debug("request for drip", zap.String("addr", addr))
+
+		drip, err := h.dripService.GetLastDrip(addr)
+		if err != nil && err != service.ErrLastDripNotFound {
+			// error when get last drip (unexpected)
+			s.SndMsg(context.Background(), msg.ChannelID, msg.FromID, []byte("Something happend wrong, try again later!"))
+			zap.L().Error("something wrong when get last drip", zap.String("address", addr), zap.Error(err))
+			return
+		} else if err == service.ErrLastDripNotFound {
+			// so drip not found we can take again
+			if err = h.dripService.UpdateLastDrip(addr); err != nil {
+				if err == substrate.ErrWrongAddress {
+					// display wrong address for drip
+					s.SndMsg(context.Background(), msg.ChannelID, msg.FromID, []byte("Sorry ur address is not SS58 encoded!"))
+				} else {
+					s.SndMsg(context.Background(), msg.ChannelID, msg.FromID, []byte("Something happend wrong, try again later!"))
+					zap.L().Error("something wrong when update last drip", zap.String("address", addr), zap.Error(err))
+				}
+				return
+			}
+
+			zap.L().Debug("successfully updated last drip", zap.String("address", addr))
+			err = s.SndMsg(context.Background(), msg.ChannelID, msg.FromID, []byte("Successfully sent drip!"))
+			if err != nil {
+				zap.L().Error("something wrong when send message", zap.String("address", addr), zap.Error(err))
+				return
+			}
+			return
+		}
+
+		// drip already exist we can print to chat that we can't take again
+		err = s.SndMsg(context.Background(), msg.ChannelID, msg.FromID,
+			[]byte(fmt.Sprintf("You can't take drip again, last drip was at %s. U can do it after: %s", drip.Format(time.RFC3339), drip.Add(time.Duration(h.cfg.Drip.Delay)*time.Second).Format(time.RFC3339))))
+		if err != nil {
+			zap.L().Error("something wrong when send message", zap.String("address", addr), zap.Error(err))
+			return
+		}
+	} else {
+		zap.L().Debug("unexpected msg in chat")
+	}
 }
 
 // processUmiService - processing umi service for messages

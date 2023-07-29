@@ -13,6 +13,8 @@ type Handler struct {
 	wg          sync.WaitGroup
 	ctx         context.Context
 	cancel      context.CancelFunc
+
+	dripService service.DripService
 }
 
 type HandlerParams struct {
@@ -20,6 +22,8 @@ type HandlerParams struct {
 	Config *config.Config
 
 	UMIServices []service.UMIService
+
+	DripService service.DripService
 }
 
 func NewHandler(params HandlerParams) *Handler {
@@ -33,5 +37,7 @@ func NewHandler(params HandlerParams) *Handler {
 		wg:          sync.WaitGroup{},
 		ctx:         ctx,
 		cancel:      cancel,
+
+		dripService: params.DripService,
 	}
 }
