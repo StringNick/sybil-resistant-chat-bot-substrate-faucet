@@ -2,14 +2,29 @@ Sybil-resistant faucet is a generic chat-bot-based faucet solution that can be u
 
 ## Getting Started
 
-1. Configure environment variables that are needed for chat bot authentication, faucet wallet, etc. Copy `config.example.toml` file into `config.toml` and start setting up the toml configuration. The rationale behind different variables setup can be found in [Variable](#variables) section. Each variable, along with its setup instructions, as well as default values, is described in [Configuration](#configuration) section.
+1. Configure environment variables that are needed for chat bot authentication, faucet wallet, etc. Copy `config.example.toml` file into `config.toml` and start setting up the toml configuration. The rationale behind different variables setup can be found in [Configuration](#configuration) section. Each variable, along with its setup instructions, as well as default values, is described in [Configuration](#configuration) section.
 
-2. Once all environment variables are ready, run the development server through docker with substrate default blockchain:
+2. You can use environment variables, from [Configuration](#configuration) section, or u can copy `config.example.toml` to `config.toml`, set ur parametrs. Than run:
+
 ```
-docker-compose -up -d
+docker-compose up -d
 ```
 
 **Note**: all environment variables need to be set correctly in order for the faucet to work 🚨
+
+## Tests
+
+To run tests localy:
+
+1. Install golang version 1.20 or latest
+2. Run `go mod download`
+3. Install and link `olm-dev`
+4. Run `go test -v ./...`
+   
+Or use docker, to run tests:
+
+`docker run --rm -it $(docker build -q -f ./docker/test/Dockerfile ./backend)`
+
 
 ## Discord
 
@@ -24,13 +39,13 @@ docker-compose -up -d
 
 * You need to create an account. 
 * Add this account to the channel where you want to use it, with permissions to read/write.
-* Provide credentials to [Configuration] (#configuration)
+* Provide credentials to [Configuration](#configuration)
 
 ## Configuration
 
-To make the faucet generic, many of its parts are configurable. Configuration settings are stored in `.env` files, one per each environment. Read more about environments and their setup in [environments](#environments) section.
+To make the faucet generic, many of its parts are configurable. Configuration stores in environment/in toml file configuration.
 
-| Environment                | Variable         | Description                                                                                                    | Default                                               |
+| Environment                | Variable(toml)   | Description                                                                                                    | Default                                               |
 | -------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
 | `DRIP_CAP`                 | cap              | How many tokens to send per each claim.                                                                        | `0.025`                                               |
 | `DRIP_DELAY`               | delay            | How often user's can request to drip tokens (in milliseconds).                                                 | `86400000`                                            |
