@@ -11,6 +11,7 @@ import (
 	"substrate-faucet/internal/env/substrate"
 	"substrate-faucet/internal/handler/processor"
 	"substrate-faucet/internal/service/drip"
+	subSvc "substrate-faucet/internal/service/substrate"
 	"substrate-faucet/internal/service/umi/discord"
 	"substrate-faucet/internal/service/umi/matrix"
 	"syscall"
@@ -86,6 +87,13 @@ func main() {
 		panic(err)
 	}
 
+	subService, err := subSvc.New(subSvc.Params{
+		API: sc,
+	})
+	if err != nil {
+		panic(err)
+	}
+
 	// transferFrom account
 	transferFrom, err := signature.KeyringPairFromSecret(cfg.Substrate.SeedOrPhrase, 0)
 	if err != nil {
@@ -95,11 +103,12 @@ func main() {
 	// creating drip service
 	dripSvc, err := drip.New(drip.Params{
 		Rdb:                 rdb,
-		SubstrateClient:     sc,
+		SubstrateService:    subService,
 		SubstrateTransferer: transferFrom,
 
-		Cap:      cfg.Drip.Cap,
-		CapDelay: cfg.Drip.Delay,
+		Cap:             cfg.Drip.Cap,
+		CapDelay:        cfg.Drip.Delay,
+		NetworkDecimals: cfg.Drip.NetworkDecimals,
 	})
 	if err != nil {
 		panic(err)

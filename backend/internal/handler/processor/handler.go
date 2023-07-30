@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"substrate-faucet/internal/domain/entity"
 	"substrate-faucet/internal/domain/service"
-	"substrate-faucet/internal/env/substrate"
 	"time"
 
 	"go.uber.org/zap"
@@ -27,7 +26,7 @@ func (h *Handler) processMsg(s service.UMIService, msg *entity.Message) {
 		} else if err == service.ErrLastDripNotFound {
 			// so drip not found we can take again
 			if err = h.dripService.UpdateLastDrip(addr); err != nil {
-				if err == substrate.ErrWrongAddress {
+				if err == service.ErrWrongAddress {
 					// display wrong address for drip
 					s.SndMsg(context.Background(), msg.ChannelID, msg.FromID, []byte("Sorry ur address is not SS58 encoded!"))
 				} else {
@@ -48,7 +47,7 @@ func (h *Handler) processMsg(s service.UMIService, msg *entity.Message) {
 
 		// drip already exist we can print to chat that we can't take again
 		err = s.SndMsg(context.Background(), msg.ChannelID, msg.FromID,
-			[]byte(fmt.Sprintf("You can't take drip again, last drip was at %s. U can do it after: %s", drip.Format(time.RFC3339), drip.Add(time.Duration(h.cfg.Drip.Delay)*time.Second).Format(time.RFC3339))))
+			[]byte(fmt.Sprintf("You can't take drip again, last drip was at %s. U can do it after: %s", drip.Format(time.RFC3339), drip.Add(time.Duration(h.cfg.Drip.Delay)*time.Millisecond).Format(time.RFC3339))))
 		if err != nil {
 			zap.L().Error("something wrong when send message", zap.String("address", addr), zap.Error(err))
 			return

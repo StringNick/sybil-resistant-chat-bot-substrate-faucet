@@ -3,8 +3,8 @@ package drip
 import (
 	"context"
 	"fmt"
+	"math"
 	"substrate-faucet/internal/domain/service"
-	"substrate-faucet/internal/env/substrate"
 	"time"
 
 	"go.uber.org/zap"
@@ -37,15 +37,15 @@ func (s *Service) UpdateLastDrip(address string) error {
 		return err
 	}
 
-	tm := time.Now().Add(time.Duration(s.capDelay) * time.Second)
+	tm := time.Now()
 
-	err = s.rdb.Set(context.Background(), fmt.Sprintf(fmtLastDripKey, address), tm.Unix(), time.Second*time.Duration(s.capDelay)).Err()
+	err = s.rdb.Set(context.Background(), fmt.Sprintf(fmtLastDripKey, address), tm.Unix(), time.Millisecond*time.Duration(s.capDelay)).Err()
 	if err != nil {
 		return err
 	}
 
 	// trying to send tx in substrate
-	hash, err := substrate.MakeATransfer(s.substrateClient, s.substrateTransferer, address, 1)
+	hash, err := s.substrateService.Transfer(s.substrateTransferer, address, uint64(s.cap*math.Pow(10, float64(s.networkDecimals))))
 	if err != nil {
 		// deleting key, because we have an error
 		defer s.rdb.Del(context.Background(), fmt.Sprintf(fmtLastDripKey, address))

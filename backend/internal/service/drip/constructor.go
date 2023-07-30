@@ -1,30 +1,40 @@
 package drip
 
 import (
+	"context"
 	"substrate-faucet/internal/domain/service"
+	"time"
 
-	gsrpc "github.com/centrifuge/go-substrate-rpc-client/v4"
 	"github.com/centrifuge/go-substrate-rpc-client/v4/signature"
 
 	"github.com/redis/go-redis/v9"
 )
 
+type RedisClient interface {
+	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.StatusCmd
+	Get(ctx context.Context, key string) *redis.StringCmd
+	Del(ctx context.Context, keys ...string) *redis.IntCmd
+}
+
 type Params struct {
-	Rdb                 *redis.Client
-	SubstrateClient     *gsrpc.SubstrateAPI
+	Rdb                 RedisClient
 	SubstrateTransferer signature.KeyringPair
 
-	Cap      float64
-	CapDelay int64
+	SubstrateService service.SubstrateService
+
+	Cap             float64
+	CapDelay        int64
+	NetworkDecimals uint16
 }
 
 type Service struct {
-	rdb                 *redis.Client
-	substrateClient     *gsrpc.SubstrateAPI
+	rdb                 RedisClient
+	substrateService    service.SubstrateService
 	substrateTransferer signature.KeyringPair
 
-	cap      float64
-	capDelay int64
+	cap             float64
+	capDelay        int64
+	networkDecimals uint16
 }
 
 func New(params Params) (service.DripService, error) {
@@ -33,7 +43,8 @@ func New(params Params) (service.DripService, error) {
 		cap:      params.Cap,
 		capDelay: params.CapDelay,
 
-		substrateClient:     params.SubstrateClient,
+		substrateService:    params.SubstrateService,
 		substrateTransferer: params.SubstrateTransferer,
+		networkDecimals:     params.NetworkDecimals,
 	}, nil
 }
