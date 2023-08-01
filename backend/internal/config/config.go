@@ -15,7 +15,7 @@ type Config struct {
 }
 
 type Substrate struct {
-	Endpoint     string `toml:"endpoint" env:"ENDPOINT" default:"ws://substrate:9944"`
+	Endpoint     string `toml:"endpoint" env:"ENDPOINT" default:"ws://substrat1e:9944"`
 	SeedOrPhrase string `toml:"seed_or_phrase" env:"SEED_OR_PHRASE"`
 }
 

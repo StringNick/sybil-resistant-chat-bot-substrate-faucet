@@ -45,7 +45,7 @@ func (s *Service) Transfer(transferFrom signature.KeyringPair, transferToSS58 st
 		return "", fmt.Errorf("get runtime version: %+v", err)
 	}
 
-	key, err := types.CreateStorageKey(meta, "System", "Account", transferFrom.PublicKey, nil)
+	key, err := types.CreateStorageKey(meta, "System", "Account", transferFrom.PublicKey)
 	if err != nil {
 		return "", fmt.Errorf("storage key: %+v", err)
 	}

@@ -43,7 +43,6 @@ func (s *Service) UpdateLastDrip(address string) error {
 	if err != nil {
 		return err
 	}
-
 	// trying to send tx in substrate
 	hash, err := s.substrateService.Transfer(s.substrateTransferer, address, uint64(s.cap*math.Pow(10, float64(s.networkDecimals))))
 	if err != nil {

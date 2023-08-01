@@ -8,7 +8,7 @@ endpoint = "redis:6379" # endpoint of redis server
 
 [substrate]
 endpoint = "ws://substrate:9944" # endpoint of substrate based chain
-seed_or_phrase = "//Alice"
+seed_or_phrase = "//Alice"       # only sr25519 is supported
 
 [discord]
 enabled = true # enable discord bot
@@ -18,5 +18,5 @@ token = ""     # discord bot token
 enabled = true                            # enable matrix bot
 device_id = "faucet"                      # can be any string
 password = ""                             # password of matrix account
-username = "@some-bot-user:matrix.org"    # username of matrix account
+username = "some-matrix-username"         # username of matrix account
 host = "https://matrix-client.matrix.org" # host of matrix server
