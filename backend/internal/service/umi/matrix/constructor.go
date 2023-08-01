@@ -142,6 +142,23 @@ func NewMatrix(ctx context.Context, p NewMatrixParams) (service.UMIService, erro
 	syncer.OnEventType(event.StateMember, func(source mautrix.EventSource, evt *event.Event) {
 		mach.HandleMemberEvent(source, evt)
 	})
+
+	syncer.OnEventType(event.EventMessage, func(source mautrix.EventSource, evt *event.Event) {
+		if evt.Timestamp < start {
+			// Ignore events from before the program started
+			return
+		}
+
+		message, isMessage := evt.Content.Parsed.(*event.MessageEventContent)
+		if isMessage && evt.Sender != cli.UserID {
+			svc.msgs <- entity.Message{
+				ChannelID: evt.RoomID.String(),
+				FromID:    evt.Sender.String(),
+				Body:      []byte(message.Body),
+			}
+		}
+	})
+
 	// Listen to encrypted messages
 	syncer.OnEventType(event.EventEncrypted, func(source mautrix.EventSource, evt *event.Event) {
 		if evt.Timestamp < start {
